@@ -1,11 +1,11 @@
 import os
 import logging
 
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from transformers import pipeline
 
 # Load the model pipeline
-generator = pipeline("text-generation", model="mistralai/Mixtral-8x7B-Instruct-v0.1")
+generator = pipeline("text-generation", model="mistralai/Mistral-7B-Instruct-v0.2")
 
 # Initialize Flask application
 app = Flask(__name__)
@@ -24,6 +24,7 @@ def generate_text():
   response = generator(prompt)
 
   # Return the generated text
+  print(response)
   return jsonify(response[0]["generated_text"])
 
 
