@@ -1,11 +1,13 @@
 import os
 import logging
 
+from transformers import AutoModelForCausalLM, AutoTokenizer
 from flask import Flask, request, jsonify
-from transformers import pipeline
 
-# Load the model pipeline
-generator = pipeline("text-generation", model="mistralai/Mistral-7B-Instruct-v0.2")
+# Load the model and tokenizer
+model_name = "mistralai/Mistral-7B-Instruct-v0.2"
+model = AutoModelForCausalLM.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 # Initialize Flask application
 app = Flask(__name__)
@@ -20,12 +22,18 @@ def generate_text():
   if not prompt:
     return "Error: Please provide a prompt in the 'prompt' field of the request body.", 400
 
-  # Generate text using the model
-  response = generator(prompt)
+    # Prepare the input
+    input_ids = tokenizer.encode(prompt, return_tensors="pt")
 
-  # Return the generated text
-  print(response)
-  return jsonify(response[0]["generated_text"])
+    # Generate text with custom maximum length
+    max_length = 500
+    output = model.generate(input_ids, max_length=max_length)
+
+    # Decode the generated sequence
+    generated_text = tokenizer.decode(output[0], skip_special_tokens=True)
+
+    # Return the generated text
+    return jsonify({"generated_text": generated_text})
 
 
 if __name__ == "__main__":
