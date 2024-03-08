@@ -1,13 +1,17 @@
 import os
 import logging
+import torch
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from flask import Flask, request, jsonify
 
-# Load the model and tokenizer
+# Load the model and tokenizer with GPU support (if available)
 model_name = "mistralai/Mistral-7B-Instruct-v0.2"
-model = AutoModelForCausalLM.from_pretrained(model_name)
+device = "cuda" if torch.cuda.is_available() else "cpu"  # Detect and use GPU if available
+model = AutoModelForCausalLM.from_pretrained(model_name, device=device) # parameter: torch_dtype=torch.float16
 tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+print(torch.cuda.is_available())
 
 # Initialize Flask application
 app = Flask(__name__)
@@ -23,10 +27,10 @@ def generate_text():
     return "Error: Please provide a prompt in the 'prompt' field of the request body.", 400
 
     # Prepare the input
-    input_ids = tokenizer.encode(prompt, return_tensors="pt")
+    input_ids = tokenizer.encode(prompt, return_tensors="pt").to(device)
 
     # Generate text with custom maximum length
-    max_length = 500
+    max_length = 250
     output = model.generate(input_ids, max_length=max_length)
 
     # Decode the generated sequence
