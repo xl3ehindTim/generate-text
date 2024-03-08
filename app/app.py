@@ -7,8 +7,8 @@ from flask import Flask, request, jsonify
 
 # Load the model and tokenizer with GPU support (if available)
 model_name = "mistralai/Mistral-7B-Instruct-v0.2"
-device = "cuda" if torch.cuda.is_available() else "cpu"  # Detect and use GPU if available
-model = AutoModelForCausalLM.from_pretrained(model_name, device=device) # parameter: torch_dtype=torch.float16
+device = "cuda" if torch.cuda.is_available() else "cpu" 
+model = AutoModelForCausalLM.from_pretrained(model_name, device_map=device, torch_dtype=torch.float16)
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 print(torch.cuda.is_available())
@@ -30,8 +30,8 @@ def generate_text():
     input_ids = tokenizer.encode(prompt, return_tensors="pt").to(device)
 
     # Generate text with custom maximum length
-    max_length = 250
-    output = model.generate(input_ids, max_length=max_length)
+    max_length = 500
+    output = model.generate(input_ids, max_new_tokens)
 
     # Decode the generated sequence
     generated_text = tokenizer.decode(output[0], skip_special_tokens=True)
