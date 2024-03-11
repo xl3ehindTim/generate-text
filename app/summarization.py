@@ -8,7 +8,7 @@ from transformers import pipeline
 
 
 def extract_json(s):
-    s = s[next(idx for idx, c in enumerate(s) if c in "{[]}"):]
+    s = s[next(idx for idx, c in enumerate(s) if c in "{["):]
     try:
         return json.loads(s)
     except json.JSONDecodeError as e:
