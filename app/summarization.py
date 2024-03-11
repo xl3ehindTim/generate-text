@@ -17,7 +17,7 @@ def extract_json(s):
 
 model_name = "mistralai/Mistral-7B-Instruct-v0.2"
 subject_extraction = pipeline(
-    "text-summarization", model=model_name, device_map="auto"
+    "summarization", model=model_name, device_map="auto"
 )
 
 conversation = "Can you summarize this conversation in one sentence, highlighting the key point or topic discussed? Here is the conversation: Whats ur band called? its called 1 idiot, 1 bass guitar"
