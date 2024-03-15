@@ -1,6 +1,3 @@
-import os
-import logging
-import torch
 import json
 
 from transformers import pipeline
@@ -8,18 +5,20 @@ from flask import Flask, request, jsonify
 
 MODEL_NAME  =  "mistralai/Mistral-7B-Instruct-v0.2"
 INSTRUCTION =  "My goal is to understand what is being talked about in a conversion. I want to know what the subjects of the conversation are and get some keywords from the conversation. Format the data as follows: [{subject: "", keywords: "" }, {subject: "", keywords: "" }] The conversation is as follows: "
-GENERATE_KWARGS = {
-  "do_sample": True,
-  # "temperature": 0.7,
-  "max_new_tokens": 1000,
-}
+
 
 def build_prompt(instruction, conversation):
-  return instruction + conversation
+  """
+  Build input format
+  """
+  return f"[INST] {instruction} {conversation} [/INST]"
 
 
 def extract_json(s):
-  s = s[next(idx, c in enumerate(s) if c in "{["):]
+  """
+  Extract JSON from output
+  """
+  s = s[next(idx for idx, c in enumerate(s) if c in "{["):]
   try:
     return json.loads(s)
   except json.JSONDecodeError as e:
@@ -33,17 +32,45 @@ app = Flask(__name__)
 
 
 @app.route("/subjects", methods=["POST"])
-def get_subjects():
+def get_subjects() -> flask.Response:
+  """
+  This function analyzes a conversation text and identifies potential subjects with 
+  associated keywords using a large language model.
+
+  **Expects a POST request with the following JSON data in the request body:**
+
+  ```json
+  {
+    "conversation": "text of the conversation" (required)
+  }
+
+  Args:
+    request (flask.Request): The Flask request object containing the POST data.
+
+  Returns:
+    flask.Response: A JSON response containing a list of identified subjects and their associated keywords. The response structure is:
+      ```json
+      [
+        {
+          "subject": "string", 
+          "keywords": ["list of strings"]
+        },
+        ...
+      ]
+      ```
+  """
+
   conversation = request.json.get("conversation")
   if not conversation:
     return "Error: No conversation parameter supplied in the request body", 400
 
   prompt = build_prompt(INSTRUCTION, conversation)
 
-  output = generator(prompt, generate_kwargs=GENERATE_KWARGS)
+  output = generator(prompt, do_sample=True, max_new_tokens=1000, temperature=0.2)
 
-  # Remove the input prompt from the output
-  generated_text = output[0]["generated_text"].split(prompt)[1].strip()
+  # Remove the input from the output before parsing
+  generated_text = output[0]["generated_text"]
+  generated_text = generated_text.replace(prompt, "")
 
   # Parse JSON
   parsed_output = extract_json(output[0]["generated_text"])
