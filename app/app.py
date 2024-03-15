@@ -2,27 +2,10 @@ import json
 
 from transformers import pipeline
 from flask import Flask, request, jsonify
+from .helpers import build_prompt, extract_json
 
 MODEL_NAME  =  "mistralai/Mistral-7B-Instruct-v0.2"
 INSTRUCTION =  "My goal is to understand what is being talked about in a conversion. I want to know what the subjects of the conversation are and get some keywords from the conversation. Format the data as follows: [{subject: "", keywords: "" }, {subject: "", keywords: "" }] The conversation is as follows: "
-
-
-def build_prompt(instruction, conversation):
-  """
-  Build input format
-  """
-  return f"[INST] {instruction} {conversation} [/INST]"
-
-
-def extract_json(s):
-  """
-  Extract JSON from output
-  """
-  s = s[next(idx for idx, c in enumerate(s) if c in "{["):]
-  try:
-    return json.loads(s)
-  except json.JSONDecodeError as e:
-    return json.loads(s[:e.pos])
 
 
 # Preload model for efficiency on first run
