@@ -7,12 +7,11 @@ from transformers import pipeline
 from flask import Flask, request, jsonify
 
 MODEL_NAME  =  "mistralai/Mistral-7B-Instruct-v0.2"
-MAX_LENGTH  =  400
 INSTRUCTION =  "My goal is to understand what is being talked about in a conversion. I want to know what the subjects of the conversation are and get some keywords from the conversation. Format the data as follows: [{subject: "", keywords: "" }, {subject: "", keywords: "" }] The conversation is as follows: "
 GENERATE_KWARGS = {
   "do_sample": True,
-  "temperature": 0.7,
-  "max_new_tokens": MAX_LENGTH,
+  # "temperature": 0.7,
+  "max_new_tokens": 1000,
 }
 
 def build_prompt(instruction, conversation):
