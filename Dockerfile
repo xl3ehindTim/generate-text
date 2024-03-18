@@ -1,16 +1,23 @@
-FROM nvidia/cuda:11.6.0-cudnn8.2.0-devel  # Base image with CUDA and cuDNN
+ARG CUDA_IMAGE="12.1.1-devel-ubuntu22.04"
+FROM nvidia/cuda:${CUDA_IMAGE}
 
-# Set the working directory in the container
-WORKDIR /greenroom_tagging
+WORKDIR /app
 
-# Copy requirements.txt to the container and install dependencies
-# remove ../?
-COPY ../requirements.txt requirements.txt
+# We need to set the host to 0.0.0.0 to allow outside access
+ENV HOST 0.0.0.0
 
-RUN pip install --upgrade pip && pip install -r requirements.txt
-RUN pip install gunicorn
+# Install python and necessary packages
+RUN apt-get update && apt-get upgrade -y \
+    && apt-get install -y git build-essential \
+    python3 python3-pip gcc wget \
+    ocl-icd-opencl-dev opencl-headers clinfo \
+    libclblast-dev libopenblas-dev \
+    && mkdir -p /etc/OpenCL/vendors && echo "libnvidia-opencl.so.1" > /etc/OpenCL/vendors/nvidia.icd
 
-# Copy all files from the current directory to the container
+# Upgrade pip and install packages
+RUN pip3 install --upgrade pip && pip3 install -r requirements.txt
+
+# Copy all files to the image
 COPY . .
 
 # Expose the Flask port
