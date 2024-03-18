@@ -2,7 +2,6 @@ import json
 
 from transformers import pipeline
 from flask import Flask, request, jsonify
-from .helpers import build_prompt, extract_json
 
 MODEL_NAME  =  "mistralai/Mistral-7B-Instruct-v0.2"
 INSTRUCTION =  "My goal is to understand what is being talked about in a conversion. I want to know what the subjects of the conversation are and get some keywords from the conversation. Format the data as follows: [{subject: "", keywords: "" }, {subject: "", keywords: "" }] The conversation is as follows: "
@@ -14,8 +13,26 @@ generator = pipeline("text-generation", model=MODEL_NAME, device_map="auto")
 app = Flask(__name__)
 
 
+def build_prompt(instruction, conversation):
+  """
+  Build input format
+  """
+  return f"[INST] {instruction} {conversation} [/INST]"
+
+
+def extract_json(s):
+  """
+  Extract JSON from output
+  """
+  s = s[next(idx for idx, c in enumerate(s) if c in "{["):]
+  try:
+    return json.loads(s)
+  except json.JSONDecodeError as e:
+    return json.loads(s[:e.pos])
+  
+
 @app.route("/subjects", methods=["POST"])
-def get_subjects() -> flask.Response:
+def get_subjects():
   """
   This function analyzes a conversation text and identifies potential subjects with 
   associated keywords using a large language model.
