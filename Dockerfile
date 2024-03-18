@@ -14,6 +14,9 @@ RUN apt-get update && apt-get upgrade -y \
     libclblast-dev libopenblas-dev \
     && mkdir -p /etc/OpenCL/vendors && echo "libnvidia-opencl.so.1" > /etc/OpenCL/vendors/nvidia.icd
 
+# Copy requirements
+COPY requirements.txt .
+
 # Upgrade pip and install packages
 RUN pip3 install --upgrade pip && pip3 install -r requirements.txt
 
@@ -24,4 +27,4 @@ COPY . .
 EXPOSE 5004
 
 # Run the Flask application
-CMD ["python", "app/app.py"]
+CMD ["python3", "app/app.py"]
