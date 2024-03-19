@@ -1,3 +1,5 @@
+# docker run --rm --gpus all {image} nvidia-smi
+
 ARG CUDA_IMAGE="12.1.1-devel-ubuntu22.04"
 FROM nvidia/cuda:${CUDA_IMAGE}
 
@@ -9,10 +11,7 @@ ENV HOST 0.0.0.0
 # Install python and necessary packages
 RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y git build-essential \
-    python3 python3-pip gcc wget \
-    ocl-icd-opencl-dev opencl-headers clinfo \
-    libclblast-dev libopenblas-dev \
-    && mkdir -p /etc/OpenCL/vendors && echo "libnvidia-opencl.so.1" > /etc/OpenCL/vendors/nvidia.icd
+    python3 python3-pip gcc wget
 
 # Copy requirements
 COPY requirements.txt .
@@ -24,7 +23,7 @@ RUN pip3 install --upgrade pip && pip3 install -r requirements.txt
 COPY . .
 
 # Expose the Flask port
-EXPOSE 5004
+EXPOSE 5005
 
 # Run the Flask application
 CMD ["python3", "app/app.py"]
