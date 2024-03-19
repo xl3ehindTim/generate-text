@@ -1,5 +1,3 @@
-# docker run --rm --gpus all {image} nvidia-smi
-
 ARG CUDA_IMAGE="12.1.1-devel-ubuntu22.04"
 FROM nvidia/cuda:${CUDA_IMAGE}
 
